@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antrenman</title>
+
+<style>
+body{
+ background:#0f172a;
+ color:white;
+ font-family:Arial;
+ text-align:center;
+ padding:20px;
+}
+.card{
+ background:#1e293b;
+ border-radius:18px;
+ padding:20px;
+ margin-top:20px;
+}
+button{
+ background:#22c55e;
+ border:none;
+ padding:15px;
+ border-radius:14px;
+ font-size:18px;
+ width:100%;
+ margin-top:12px;
+}
+.timer{
+ font-size:34px;
+ margin-top:15px;
+}
+.small{
+ opacity:0.8;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🏐 Günlük Antrenman</h1>
+
+<div class="card">
+ <h2 id="exercise"></h2>
+ <p id="details" class="small"></p>
+ <p id="setInfo"></p>
+
+ <div class="timer" id="timer"></div>
+
+ <button onclick="completeSet()">Seti Bitirdim</button>
+</div>
+
+<script>
+const workout = [
+ {name:"Pike Push-up", sets:4, reps:"8", rest:60},
+ {name:"Plank", sets:3, reps:"40 sn", rest:40}
+];
+
+let ex = 0;
+let set = 1;
+let restTime = 0;
+let interval;
+
+function updateUI(){
+ document.getElementById("exercise").innerText = workout[ex].name;
+ document.getElementById("details").innerText =
+ workout[ex].sets + " Set x " + workout[ex].reps;
+ document.getElementById("setInfo").innerText =
+ "Set " + set + " / " + workout[ex].sets;
+ document.getElementById("timer").innerText = "";
+}
+
+updateUI();
+
+function completeSet(){
+ if(set < workout[ex].sets){
+  startRest(workout[ex].rest);
+ }else{
+  ex++;
+  set = 1;
+  if(ex < workout.length){
+   alert("Hareket değiştir");
+   updateUI();
+  }else{
+   alert("Antrenman bitti 👏");
+  }
+ }
+}
+
+function startRest(seconds){
+ restTime = seconds;
+ document.getElementById("timer").innerText =
+ "Dinlenme: " + restTime + " sn";
+
+ interval = setInterval(()=>{
+  restTime--;
+  document.getElementById("timer").innerText =
+  "Dinlenme: " + restTime + " sn";
+
+  if(restTime <= 0){
+   clearInterval(interval);
+   set++;
+   updateUI();
+  }
+ },1000);
+}
+</script>
+
+</body>
+</html>
