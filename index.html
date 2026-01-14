@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antrenman</title>
+<style>
+body{
+ background:#0f172a;
+ color:white;
+ font-family:Arial;
+ text-align:center;
+ padding:20px;
+}
+.card{
+ background:#1e293b;
+ border-radius:18px;
+ padding:20px;
+ margin-top:20px;
+}
+button{
+ background:#22c55e;
+ border:none;
+ padding:15px;
+ border-radius:14px;
+ font-size:18px;
+ width:100%;
+ margin-top:10px;
+}
+.timer{
+ font-size:36px;
+ margin:15px 0;
+}
+.small{
+ opacity:0.8;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🏐 Günlük Antrenman</h1>
+
+<div class="card">
+ <h2 id="exercise">Hazır</h2>
+ <p class="small" id="setInfo"></p>
+ <div class="timer" id="timer">00:00</div>
+ <button onclick="startSet()">Seti Başlat</button>
+</div>
+
+<script>
+const workout = [
+ {name:"Pike Push-up", sets:4, rest:60},
+ {name:"Plank", sets:3, rest:40}
+];
+
+let ex=0, set=1, time=0, interval;
+
+function startSet(){
+ clearInterval(interval);
+ time=0;
+ document.getElementById("exercise").innerText = workout[ex].name;
+ document.getElementById("setInfo").innerText =
+ "Set " + set + " / " + workout[ex].sets;
+
+ interval=setInterval(()=>{
+  time++;
+  let m=Math.floor(time/60);
+  let s=time%60;
+  document.getElementById("timer").innerText =
+  String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+ },1000);
+
+ setTimeout(nextStep, workout[ex].rest*1000);
+}
+
+function nextStep(){
+ clearInterval(interval);
+ if(set < workout[ex].sets){
+  set++;
+  alert("Set bitti – Dinlen");
+ }else{
+  ex++;
+  set=1;
+  if(ex < workout.length){
+   alert("Hareket değiştir");
+  }else{
+   alert("Antrenman bitti 👏");
+  }
+ }
+}
+</script>
+
+</body>
+</html>
