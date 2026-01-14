@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antrenman</title>
+
+<style>
+body{
+ background:#0f172a;
+ color:white;
+ font-family:Arial;
+ padding:20px;
+ text-align:center;
+}
+.header{
+ font-size:20px;
+ opacity:0.9;
+}
+.type{
+ margin-top:5px;
+ font-size:16px;
+ color:#38bdf8;
+}
+.card{
+ background:#1e293b;
+ border-radius:20px;
+ padding:22px;
+ margin-top:20px;
+}
+.exercise{
+ font-size:22px;
+ margin-bottom:6px;
+}
+.details{
+ opacity:0.8;
+}
+.setinfo{
+ margin-top:10px;
+ font-size:18px;
+}
+.timer, .plankTimer{
+ font-size:32px;
+ margin-top:15px;
+}
+button{
+ width:100%;
+ padding:15px;
+ border:none;
+ border-radius:14px;
+ font-size:18px;
+ margin-top:12px;
+}
+.finish{
+ background:#22c55e;
+}
+.plankBtn{
+ background:#38bdf8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header" id="day"></div>
+<div class="type" id="type"></div>
+
+<div class="card">
+ <div class="exercise" id="exercise"></div>
+ <div class="details" id="details"></div>
+ <div class="setinfo" id="setinfo"></div>
+
+ <div class="timer" id="restTimer"></div>
+
+ <div id="plankArea" style="display:none;">
+   <div class="plankTimer" id="plankTimer">00</div>
+   <button class="plankBtn" onclick="togglePlank()">Plank Başlat / Durdur</button>
+ </div>
+
+ <button class="finish" onclick="completeSet()">Seti Bitirdim</button>
+</div>
+
+<script>
+const days = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+const today = new Date().getDay();
+
+const programs = {
+ 1:{type:"ALT VÜCUT", workout:[
+  {name:"Squat", sets:4, reps:"12", rest:60},
+  {name:"Lunge", sets:3, reps:"10", rest:60},
+  {name:"Jump Squat", sets:3, reps:"8", rest:90}
+ ]},
+ 2:{type:"ÜST VÜCUT", workout:[
+  {name:"Şınav", sets:4, reps:"12", rest:60},
+  {name:"Plank", sets:3, reps:"40 sn", rest:40, timed:true}
+ ]},
+ 3:{type:"ALT VÜCUT", workout:[
+  {name:"Bulgarian Split Squat", sets:3, reps:"8", rest:60},
+  {name:"Calf Raise", sets:4, reps:"15", rest:45}
+ ]},
+ 4:{type:"ÜST VÜCUT", workout:[
+  {name:"Pike Push-up", sets:4, reps:"8", rest:60},
+  {name:"Plank", sets:3, reps:"40 sn", rest:40, timed:true}
+ ]}
+};
+
+let prog = programs[today];
+let ex = 0, set = 1;
+let restInterval, plankInterval;
+let plankTime = 40;
+
+document.getElementById("day").innerText = days[today];
+document.getElementById("type").innerText = prog ? prog.type : "DİNLENME";
+
+function updateUI(){
+ if(!prog) return;
+ let w = prog.workout[ex];
+ document.getElementById("exercise").innerText = w.name;
+ document.getElementById("details").innerText =
+ w.sets+" Set x "+w.reps;
+ document.getElementById("setinfo").innerText =
+ "Set "+set+" / "+w.sets;
+ document.getElementById("restTimer").innerText = "";
+ document.getElementById("plankArea").style.display =
+ w.timed ? "block" : "none";
+ plankTime = 40;
+ document.getElementById("plankTimer").innerText = plankTime;
+}
+
+updateUI();
+
+function completeSet(){
+ let w = prog.workout[ex];
+ if(set < w.sets){
+  startRest(w.rest);
+ }else{
+  ex++; set=1;
+  if(ex < prog.workout.length){
+   alert("Hareket değiştir");
+   updateUI();
+  }else{
+   alert("Antrenman bitti 👏");
+  }
+ }
+}
+
+function startRest(sec){
+ let t = sec;
+ document.getElementById("restTimer").innerText =
+ "Dinlenme: "+t+" sn";
+ restInterval = setInterval(()=>{
+  t--;
+  document.getElementById("restTimer").innerText =
+  "Dinlenme: "+t+" sn";
+  if(t<=0){
+   clearInterval(restInterval);
+   set++;
+   updateUI();
+  }
+ },1000);
+}
+
+function togglePlank(){
+ if(plankInterval){
+  clearInterval(plankInterval);
+  plankInterval=null;
+ }else{
+  plankInterval=setInterval(()=>{
+   plankTime--;
+   document.getElementById("plankTimer").innerText = plankTime;
+   if(plankTime<=0){
+    navigator.vibrate(300);
+    clearInterval(plankInterval);
+   }
+  },1000);
+ }
+}
+</script>
+
+</body>
+  </html>
