@@ -1,0 +1,76 @@
+<!DOCTYPE html><html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antrenman Takibi</title>
+  <style>
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#f8fafc}
+    header{padding:16px;text-align:center;background:#020617;border-bottom:1px solid #1e293b}
+    header h1{margin:0;font-size:22px}
+    header p{margin:6px 0 0;color:#94a3b8}
+    .container{padding:16px}
+    .card{background:#020617;border-radius:16px;padding:14px;margin-bottom:16px;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+    .img{width:100%;height:180px;background:#1e293b;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#94a3b8;margin-bottom:10px}
+    .title{font-size:18px;margin-bottom:6px}
+    .info{color:#cbd5f5;margin-bottom:10px}
+    .timer{font-size:36px;text-align:center;margin:10px 0;display:none}
+    button{width:100%;padding:12px;border-radius:12px;border:none;font-size:16px;background:#2563eb;color:white;margin-top:8px}
+    button.secondary{background:#334155}
+  </style>
+</head>
+<body>
+<header>
+  <h1 id="dayName"></h1>
+  <p id="dayType"></p>
+</header>
+<div class="container">
+  <div class="card">
+    <div class="img" id="img">Hareket Görseli</div>
+    <div class="title" id="name"></div>
+    <div class="info" id="info"></div>
+    <div class="timer" id="timer"></div>
+    <button id="start" onclick="startTimer()">Sayaç Başlat</button>
+    <button class="secondary" onclick="next()">Sonraki Hareket</button>
+  </div>
+</div>
+<script>
+const program={
+  0:{type:'ÜST',ex:[{n:'Şınav',i:'4 x 10'},{n:'Dumbbell Row',i:'3 x 12'}]},
+  1:{type:'ALT',ex:[{n:'Squat',i:'4 x 8'},{n:'Plank',i:'3 x 30 sn',t:30}]},
+  2:{type:'DİNLENME',ex:[]},
+  3:{type:'ALT',ex:[{n:'RDL',i:'4 x 8'},{n:'Wall Sit',i:'3 x 30 sn',t:30}]},
+  4:{type:'ÜST',ex:[{n:'Overhead Press',i:'3 x 8'},{n:'Plank Shoulder Tap',i:'3 x 20 sn',t:20}]},
+  5:{type:'DİNLENME',ex:[]},
+  6:{type:'ALT (HAFİF)',ex:[{n:'Jump Squat',i:'3 x 8'},{n:'Plank',i:'3 x 30 sn',t:30}]}
+};
+const d=new Date().getDay();
+const today=program[d];
+let idx=0;let interval;let remain=0;
+document.getElementById('dayName').innerText=new Date().toLocaleDateString('tr-TR',{weekday:'long'});
+document.getElementById('dayType').innerText=today.type;
+function load(){
+  if(!today.ex[idx]){
+    document.getElementById('name').innerText='Antrenman Bitti';
+    document.getElementById('info').innerText='Tebrikler';
+    document.getElementById('start').style.display='none';
+    document.getElementById('timer').style.display='none';
+    return;
+  }
+  const e=today.ex[idx];
+  document.getElementById('name').innerText=e.n;
+  document.getElementById('info').innerText=e.i;
+  if(e.t){remain=e.t;document.getElementById('timer').style.display='block';document.getElementById('timer').innerText=remain;document.getElementById('start').style.display='block';}
+  else{document.getElementById('timer').style.display='none';document.getElementById('start').style.display='none';}
+}
+function startTimer(){
+  clearInterval(interval);
+  interval=setInterval(()=>{
+    remain--;document.getElementById('timer').innerText=remain;
+    if(remain<=0){clearInterval(interval);navigator.vibrate?.(300);}
+  },1000);
+}
+function next(){clearInterval(interval);idx++;load();}
+load();
+</script>
+</body>
+  </html>
