@@ -1,0 +1,223 @@
+<!DOCTYPE html><html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antrenman Uygulaması</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 0; background: #f4f6fa; color: #111; }
+    header { background: #2f5bea; color: #fff; padding: 16px; text-align: center; }
+    .day-info { font-size: 14px; opacity: 0.9; }
+    .container { padding: 16px; }.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
+
+.progress {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.progress div {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: #ddd;
+}
+.progress .active { background: #2f5bea; }
+
+.video {
+  width: 100%;
+  height: 200px;
+  background: #eaeaea;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.exercise-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+.exercise-info { font-size: 14px; color: #555; margin-bottom: 16px; }
+
+.timer {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  margin: 12px 0;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.primary { background: #2f5bea; color: #fff; }
+.secondary { background: #e0e4ff; color: #2f5bea; }
+.danger { background: #eee; }
+
+.rest {
+  background: #2f5bea;
+  color: #fff;
+}
+
+.rest .timer { font-size: 56px; }
+.rest .controls button { background: #fff; color: #2f5bea; }
+
+.hidden { display: none; }
+
+  </style>
+</head>
+<body><header>
+  <h2 id="dayTitle">Gün 1 - Üst Vücut</h2>
+  <div class="day-info">Isınma • Setli Antrenman • Dinlenme Dahil</div>
+</header><div class="container">  <div class="progress" id="progress"></div>  <div class="card" id="exerciseCard">
+    <div class="video">Hareket Videosu</div>
+    <div class="exercise-name" id="exerciseName"></div>
+    <div class="exercise-info" id="exerciseInfo"></div>
+    <div class="timer" id="exerciseTimer"></div>
+    <div class="controls">
+      <button class="secondary" onclick="toggleTimer()">Dur / Devam</button>
+      <button class="primary" onclick="nextStep()">Bitti</button>
+    </div>
+  </div>  <div class="card rest hidden" id="restCard">
+    <div class="video">Sonraki Hareket Önizleme</div>
+    <div class="exercise-name">Dinlenme</div>
+    <div class="timer" id="restTimer">00:30</div>
+    <div class="controls">
+      <button onclick="addRest()">+20 sn</button>
+    </div>
+  </div></div><script>
+  /* === PROGRAM === */
+  const program = [
+    { name: "Jumping Jack", type: "time", duration: 30, sets: 1, rest: 20 },
+    { name: "Şınav", type: "rep", reps: 12, sets: 3, rest: 30 },
+    { name: "Plank", type: "time", duration: 40, sets: 3, rest: 30 },
+    { name: "Crunch", type: "rep", reps: 15, sets: 3, rest: 30 }
+  ];
+
+  /* === DURUM === */
+  let exerciseIndex = 0;
+  let setIndex = 1;
+  let timer = null;
+  let timeLeft = 0;
+  let paused = false;
+
+  const exerciseName = document.getElementById("exerciseName");
+  const exerciseInfo = document.getElementById("exerciseInfo");
+  const exerciseTimer = document.getElementById("exerciseTimer");
+  const exerciseCard = document.getElementById("exerciseCard");
+  const restCard = document.getElementById("restCard");
+  const restTimerEl = document.getElementById("restTimer");
+  const progressEl = document.getElementById("progress");
+
+  function initProgress() {
+    progressEl.innerHTML = "";
+    program.forEach((_, i) => {
+      const d = document.createElement("div");
+      if (i === exerciseIndex) d.classList.add("active");
+      progressEl.appendChild(d);
+    });
+  }
+
+  function loadExercise() {
+    clearInterval(timer);
+    paused = false;
+    initProgress();
+
+    const ex = program[exerciseIndex];
+    exerciseName.textContent = ex.name;
+
+    if (ex.type === "time") {
+      timeLeft = ex.duration;
+      exerciseInfo.textContent = `Set ${setIndex}/${ex.sets} • ${ex.duration} sn`;
+      exerciseTimer.textContent = format(timeLeft);
+      startTimer();
+    } else {
+      exerciseInfo.textContent = `Set ${setIndex}/${ex.sets} • ${ex.reps} tekrar`;
+      exerciseTimer.textContent = `x ${ex.reps}`;
+    }
+  }
+
+  function startTimer() {
+    timer = setInterval(() => {
+      if (!paused) {
+        timeLeft--;
+        exerciseTimer.textContent = format(timeLeft);
+        if (timeLeft <= 0) {
+          navigator.vibrate?.(300);
+          nextStep();
+        }
+      }
+    }, 1000);
+  }
+
+  function toggleTimer() {
+    paused = !paused;
+  }
+
+  function nextStep() {
+    clearInterval(timer);
+    const ex = program[exerciseIndex];
+
+    if (setIndex < ex.sets) {
+      showRest(ex.rest);
+    } else {
+      setIndex = 1;
+      exerciseIndex++;
+      if (exerciseIndex < program.length) {
+        loadExercise();
+      } else {
+        alert("Antrenman bitti 👏");
+      }
+    }
+  }
+
+  function showRest(sec) {
+    exerciseCard.classList.add("hidden");
+    restCard.classList.remove("hidden");
+    timeLeft = sec;
+    restTimerEl.textContent = format(timeLeft);
+
+    timer = setInterval(() => {
+      timeLeft--;
+      restTimerEl.textContent = format(timeLeft);
+      if (timeLeft <= 0) {
+        navigator.vibrate?.(300);
+        clearInterval(timer);
+        restCard.classList.add("hidden");
+        exerciseCard.classList.remove("hidden");
+        setIndex++;
+        loadExercise();
+      }
+    }, 1000);
+  }
+
+  function addRest() {
+    timeLeft += 20;
+    restTimerEl.textContent = format(timeLeft);
+  }
+
+  function format(sec) {
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  loadExercise();
+</script></body>
+</html>
