@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voleybol Antrenman</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Montserrat',sans-serif;background:radial-gradient(circle at top,#1e293b,#020617 70%);color:#f8fafc}
+header{padding:18px;text-align:center}
+header h1{margin:0;font-size:26px;font-weight:800}
+header p{margin:6px 0 0;font-size:14px;color:#94a3b8}
+.container{padding:16px}
+.card{background:linear-gradient(180deg,#020617,#020617cc);border-radius:22px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.preview{height:220px;border-radius:18px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:14px}
+.badge{display:inline-block;padding:6px 14px;border-radius:999px;background:#020617cc;border:1px solid #1e293b;font-size:13px;margin-bottom:10px}
+.title{font-size:22px;font-weight:700;margin-bottom:4px}
+.info{color:#cbd5f5;margin-bottom:6px}
+.setinfo{color:#94a3b8;font-size:14px;margin-bottom:12px}
+.timer{font-size:56px;font-weight:800;text-align:center;margin:10px 0}
+.controls{display:flex;gap:12px}
+button{flex:1;padding:16px;border-radius:18px;border:none;font-size:16px;font-weight:600}
+.primary{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.secondary{background:#334155;color:#fff}
+.hidden{display:none}
+.restCard{margin-top:16px;background:linear-gradient(135deg,#020617,#0f172a);border-radius:22px;padding:20px;text-align:center}
+.restCard h2{margin:0 0 6px;font-size:24px}
+.restCard p{margin:0 0 14px;color:#94a3b8}
+</style>
+</head>
+<body>
+<header>
+<h1 id="dayName"></h1>
+<p id="dayType"></p>
+</header>
+<div class="container">
+<div class="card" id="exerciseCard">
+<div class="preview" id="preview">🏐</div>
+<div class="badge" id="modeBadge">EGZERSİZ</div>
+<div class="title" id="exName"></div>
+<div class="info" id="exInfo"></div>
+<div class="setinfo" id="setInfo"></div>
+<div class="timer hidden" id="timer">0</div>
+<div class="controls">
+<button id="startBtn" class="primary hidden" onclick="startTimer()">Başlat</button>
+<button class="secondary" onclick="next()">Geç</button>
+</div>
+</div>
+<div class="restCard hidden" id="restCard">
+<h2>Dinlenme</h2>
+<p>Sonraki set için hazırlan</p>
+<div class="timer" id="restTimer">60</div>
+<div class="controls">
+<button class="secondary" onclick="addRest()">+20 sn</button>
+<button class="primary" onclick="finishRest()">Hazırım</button>
+</div>
+</div>
+</div>
+<script>
+/* TAKVİM
+Pzt ÜST | Sal ALT | Çar DİNLENME | Per ALT | Cum ÜST | Cmt DİNLENME | Paz ALT (HAFİF)
+*/
+const week={
+1:{type:'ÜST',ex:[{n:'Şınav',set:4,rep:'10',icon:'💪'},{n:'Dumbbell Row',set:3,rep:'12',icon:'🏋️'}]},
+2:{type:'ALT',ex:[{n:'Squat',set:4,rep:'8',icon:'🦵'},{n:'Plank',set:3,rep:'30 sn',t:30,icon:'⏱️'}]},
+3:{type:'DİNLENME',rest:true},
+4:{type:'ALT',ex:[{n:'RDL',set:4,rep:'8',icon:'🦵'},{n:'Wall Sit',set:3,rep:'30 sn',t:30,icon:'⏱️'}]},
+5:{type:'ÜST',ex:[{n:'Overhead Press',set:3,rep:'8',icon:'🏋️'},{n:'Plank Shoulder Tap',set:3,rep:'20 sn',t:20,icon:'⏱️'}]},
+6:{type:'DİNLENME',rest:true},
+0:{type:'ALT (HAFİF)',ex:[{n:'Jump Squat',set:3,rep:'8',icon:'⚡'},{n:'Plank',set:3,rep:'30 sn',t:30,icon:'⏱️'}]}
+};
+const day=new Date().getDay();
+const today=week[day];
+let exIndex=0,setIndex=1,timer=null,remain=0,restTimer=null,restRemain=60;
+const $=id=>document.getElementById(id);
+$('dayName').innerText=new Date().toLocaleDateString('tr-TR',{weekday:'long'});
+$('dayType').innerText=today.type;
+if(today.rest){showRestDay()}else{loadExercise()}
+function showRestDay(){ $('preview').innerText='😌';$('modeBadge').innerText='DİNLENME';$('exName').innerText='Dinlenme Günü';$('exInfo').innerText='Hafif yürüyüş ve esneme';$('setInfo').innerText='';$('startBtn').classList.add('hidden') }
+function loadExercise(){ clearInterval(timer);clearInterval(restTimer);$('restCard').classList.add('hidden');$('exerciseCard').classList.remove('hidden'); const ex=today.ex[exIndex]; $('preview').innerText=ex.icon; $('modeBadge').innerText='EGZERSİZ'; $('exName').innerText=ex.n; $('exInfo').innerText=''; $('setInfo').innerText=`Set ${setIndex} / ${ex.set}  |  ${ex.rep}`; if(ex.t){ remain=ex.t; $('timer').innerText=remain; $('timer').classList.remove('hidden'); $('startBtn').classList.remove('hidden'); } else { $('timer').classList.add('hidden'); $('startBtn').classList.add('hidden'); } }
+function startTimer(){ clearInterval(timer); timer=setInterval(()=>{ remain--; $('timer').innerText=remain; if(remain<=0){ clearInterval(timer); navigator.vibrate&&navigator.vibrate([200,100,200]); showRest(); } },1000) }
+function showRest(){ $('exerciseCard').classList.add('hidden'); $('restCard').classList.remove('hidden'); restRemain=60; $('restTimer').innerText=restRemain; restTimer=setInterval(()=>{ restRemain--; $('restTimer').innerText=restRemain; if(restRemain<=0){ clearInterval(restTimer); navigator.vibrate&&navigator.vibrate(300); } },1000) }
+function addRest(){ restRemain+=20; $('restTimer').innerText=restRemain }
+function finishRest(){ clearInterval(restTimer); next() }
+function next(){ const ex=today.ex[exIndex]; if(setIndex<ex.set){ setIndex++; loadExercise(); } else { exIndex++; setIndex=1; if(today.ex[exIndex]) loadExercise(); else endWorkout(); } }
+function endWorkout(){ clearInterval(timer); $('preview').innerText='✅'; $('modeBadge').innerText='BİTTİ'; $('exName').innerText='Antrenman Tamamlandı'; $('exInfo').innerText='Tebrikler'; $('setInfo').innerText=''; $('timer').classList.add('hidden'); $('startBtn').classList.add('hidden'); }
+</script>
+</body>
+</html>
